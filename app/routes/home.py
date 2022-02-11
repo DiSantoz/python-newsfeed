@@ -1,5 +1,5 @@
 # import functions from FLASK module
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, session, redirect
 from app.models import Post
 from app.db import get_db
 
@@ -13,14 +13,19 @@ def index():
     # get all posts
     db = get_db()
     posts = db.query(Post).order_by(Post.created_at.desc()).all()
-    return render_template("homepage.html", posts=posts)
+    return render_template("homepage.html", posts=posts, loggedIn=session.get('loggedIn'))
 
 # route to return login template
 
 
 @bp.route('/login')
 def login():
-    return render_template('login.html')
+
+    # not logged in yet
+    if session.get('loggedIn') is None:
+        return render_template('login.html')
+
+    return redirect('/dashboard')
 
 # route to return single-post template
 
@@ -31,4 +36,4 @@ def single(id):
     db = get_db()
     post = db.query(Post).filter(Post.id == id).one()
     # render single post templated
-    return render_template('single-post.html', post=post)
+    return render_template('single-post.html', post=post, loggedIn=session.get('loggedIn'))
